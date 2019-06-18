@@ -125,6 +125,8 @@ private:
 
     TH1* LocalX;
     TH1* LocalY;
+
+    unsigned int EntriesInt;
   };
 
   // container struct to organize collection of histograms during endJob
@@ -369,6 +371,7 @@ private:
 
   unsigned long long nTracks_;
   const unsigned long long maxTracks_;
+  unsigned int maxEntriesPerModuleForDmr_;
 
   TrackerValidationVariables avalidator_;
 };
@@ -482,6 +485,7 @@ TrackerOfflineValidation::TrackerOfflineValidation(const edm::ParameterSet& iCon
       chargeCut_(parSet_.getParameter<int>("chargeCut")),
       nTracks_(0),
       maxTracks_(parSet_.getParameter<unsigned long long>("maxTracks")),
+      maxEntriesPerModuleForDmr_(parSet_.getParameter<unsigned int>("maxEntriesPerModuleForDmr")),
       avalidator_(iConfig, consumesCollector()) {}
 
 TrackerOfflineValidation::~TrackerOfflineValidation() {
@@ -1272,6 +1276,8 @@ void TrackerOfflineValidation::analyze(const edm::Event& iEvent, const edm::Even
 
         if (moduleLevelProfiles_ && itH->inside) {
           float tgalpha = tan(itH->localAlpha);
+          histStruct.EntriesInt=histStruct.LocalX->GetEntries();
+          if (histStruct.EntriesInt>=maxEntriesPerModuleForDmr_) continue;
           if (fabs(tgalpha) != 0) {
             histStruct.LocalX->Fill(itH->localXnorm, tgalpha * tgalpha);
             histStruct.LocalY->Fill(itH->localYnorm, tgalpha * tgalpha);
